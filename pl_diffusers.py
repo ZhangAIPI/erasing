@@ -66,12 +66,12 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
     for index in range(len(erase_concept)):
         
         erase_concept_sampled = erase_concept[index]
-        neutral_text_embeddings = diffuser.get_text_embeddings([''],n_imgs=1)
-        positive_text_embeddings, to_optimize_embeddings = diffuser.get_text_embeddings_with_OPTprompts([erase_concept_sampled[0]],n_imgs=1, n_opt_prompts=n_opt_prompts)
-        
+        neutral_text_embeddings,to_optimize_embeddings = diffuser.get_text_embeddings_with_OPTprompts([''],n_imgs=1)
         # optimize the to_optimize_embeddings as the variable to optimize
         to_optimize_embeddings = to_optimize_embeddings.requires_grad_(True)
-        optimizer = torch.optim.Adam([to_optimize_embeddings], lr=lr)
+        # optimizer = torch.optim.Adam([to_optimize_embeddings], lr=lr)
+        positive_text_embeddings = diffuser.get_text_embeddings_with_PostOPTprompts([erase_concept_sampled[0]],n_imgs=1,n_opt_prompts=n_opt_prompts, masked_prompt_embedding=to_optimize_embeddings)
+        
         
         
         target_text_embeddings = diffuser.get_text_embeddings_with_PostOPTprompts([erase_concept_sampled[1]],n_imgs=1,n_opt_prompts=n_opt_prompts, masked_prompt_embedding=to_optimize_embeddings)
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     iterations = args.iterations #200
     negative_guidance = args.negative_guidance #1
     lr = args.lr #1e-5
-    name = f"pl-{erase_concept.lower().replace(' ','').replace(',','')}_from_{erase_from.lower().replace(' ','').replace(',','')}-{train_method}_{negative_guidance}-epochs_{iterations}"
+    name = f"new_pl-{erase_concept.lower().replace(' ','').replace(',','')}_from_{erase_from.lower().replace(' ','').replace(',','')}-{train_method}_{negative_guidance}-epochs_{iterations}"
     if not os.path.exists(args.save_path):
         os.makedirs(args.save_path, exist_ok = True)
     save_path = f'{args.save_path}/{name}.pt'
