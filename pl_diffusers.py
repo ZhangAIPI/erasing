@@ -29,7 +29,7 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
 
     finetuner = FineTunedModel(diffuser, train_method=train_method)
 
-    optimizer = torch.optim.Adam(finetuner.parameters(), lr=lr)
+    # optimizer = torch.optim.Adam(finetuner.parameters(), lr=lr)
     criteria = torch.nn.MSELoss()
 
     pbar = tqdm(range(iterations))
@@ -75,7 +75,7 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
         positive_text_embeddings, positive_opt_token_stard_idx, positive_opt_token_end_idx = diffuser.get_text_embeddings_with_PostOPTprompts([erase_concept_sampled[0]],n_imgs=1,n_opt_prompts=n_opt_prompts, masked_prompt_embedding=to_optimize_embeddings)
         target_text_embeddings, target_opt_token_stard_idx, target_opt_token_end_idx = diffuser.get_text_embeddings_with_PostOPTprompts([erase_concept_sampled[1]],n_imgs=1,n_opt_prompts=n_opt_prompts, masked_prompt_embedding=to_optimize_embeddings)
         diffuser.set_scheduler_timesteps(nsteps)
-        optimizer.zero_grad()
+        # optimizer.zero_grad()
         for i in pbar:
             iteration = torch.randint(1, nsteps - 1, (1,)).item()
             # print("iteration", iteration)
@@ -104,13 +104,14 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
 
             loss = criteria(negative_latents, target_latents - (negative_guidance*(positive_latents - neutral_latents))) 
 
-            loss.backward(retain_graph=True)
+            # loss.backward(retain_graph=True)
             # import pdb;pdb.set_trace()
             # optimizer.step()
+            grad = torch.autograd.grad(loss, to_optimize_embeddings, retain_graph=False, create_graph=False)[0]
             with torch.no_grad():
-                to_optimize_embeddings = to_optimize_embeddings - lr * torch.sign(to_optimize_embeddings.grad)
+                to_optimize_embeddings = to_optimize_embeddings - lr * torch.sign(grad)
             
-            optimizer.zero_grad()
+            to_optimize_embeddings.requires_grad_(True)
             
             positive_text_embeddings[:,positive_opt_token_stard_idx:positive_opt_token_end_idx] = to_optimize_embeddings.clone()
             target_text_embeddings[:,target_opt_token_stard_idx:target_opt_token_end_idx] = to_optimize_embeddings.clone()
