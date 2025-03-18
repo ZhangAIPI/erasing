@@ -74,7 +74,7 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
         optimizer = torch.optim.Adam([to_optimize_embeddings], lr=lr)
         
         
-        target_text_embeddings = diffuser.get_text_embeddings_with_PostOPTprompts([erase_concept_sampled[1]],n_imgs=1,n_opt_prompts=n_opt_prompts, to_optimize_embeddings=to_optimize_embeddings)
+        target_text_embeddings = diffuser.get_text_embeddings_with_PostOPTprompts([erase_concept_sampled[1]],n_imgs=1,n_opt_prompts=n_opt_prompts, masked_prompt_embedding=to_optimize_embeddings)
         diffuser.set_scheduler_timesteps(nsteps)
         optimizer.zero_grad()
         for i in pbar:
