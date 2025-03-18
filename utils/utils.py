@@ -322,7 +322,7 @@ class StableDiffuser(torch.nn.Module):
             try:
                 output = self.scheduler.step(noise_pred, self.scheduler.timesteps[iteration], latents)
             except:
-                import pdb;pdb.set_trace
+                import pdb;pdb.set_trace()
                 output = self.scheduler.step(noise_pred, self.scheduler.timesteps[iteration], latents)
             if trace_args:
 
