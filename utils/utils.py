@@ -225,7 +225,7 @@ class StableDiffuser(torch.nn.Module):
         opt_token_end_idx = num_valid_tokens+opt_num_tokens
         
 
-        text_embeddings = self.text_encode(masked_prompts)
+        text_embeddings = self.text_encode(masked_text_tokens)
         to_optimize_embeddings = text_embeddings[:,opt_token_stard_idx:opt_token_end_idx]
 
 
@@ -252,7 +252,7 @@ class StableDiffuser(torch.nn.Module):
         opt_token_stard_idx = num_valid_tokens
         opt_token_end_idx = num_valid_tokens+opt_num_tokens
 
-        text_embeddings = self.text_encode(masked_prompts)
+        text_embeddings = self.text_encode(masked_text_tokens)
         text_embeddings[:,opt_token_stard_idx:opt_token_end_idx] = masked_prompt_embedding
 
         unconditional_tokens = self.text_tokenize([""] * len(masked_prompts))
