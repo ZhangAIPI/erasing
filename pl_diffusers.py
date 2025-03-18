@@ -106,6 +106,7 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
 
             loss.backward()
             optimizer.step()
+            optimizer.zero_grad()
 
     torch.save(to_optimize_embeddings.detach().cpu(), save_path)
 
