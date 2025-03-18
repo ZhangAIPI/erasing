@@ -371,7 +371,7 @@ class StableDiffuser(torch.nn.Module):
         if "masked_prompt_embedding" in kwargs and "n_opt_prompts" in kwargs:
             masked_prompt_embedding = kwargs["masked_prompt_embedding"]
             n_opt_prompts = kwargs["n_opt_prompts"]
-            text_embeddings = self.get_text_embeddings_with_PostOPTprompts(prompts,n_imgs=n_imgs, n_opt_prompts=n_opt_prompts, masked_prompt_embedding=masked_prompt_embedding)
+            text_embeddings,_,_ = self.get_text_embeddings_with_PostOPTprompts(prompts,n_imgs=n_imgs, n_opt_prompts=n_opt_prompts, masked_prompt_embedding=masked_prompt_embedding)
             kwargs.pop("masked_prompt_embedding")
             kwargs.pop("n_opt_prompts")
         else:
@@ -379,7 +379,7 @@ class StableDiffuser(torch.nn.Module):
 
         end_iteration = end_iteration or n_steps
 
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         latents_steps, trace_steps = self.diffusion(
             latents,
             text_embeddings,
