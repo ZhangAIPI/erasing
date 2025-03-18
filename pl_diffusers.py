@@ -69,11 +69,14 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
         neutral_text_embeddings,to_optimize_embeddings, neutral_opt_token_stard_idx, neutral_opt_token_end_idx = diffuser.get_text_embeddings_with_OPTprompts([''],n_imgs=1)
         # optimize the to_optimize_embeddings as the variable to optimize
         to_optimize_embeddings = torch.nn.Parameter(to_optimize_embeddings.clone().detach())
+        to_optimize_embeddings = to_optimize_embeddings/ to_optimize_embeddings.norm(dim=-1, keepdim=True, p=2)
         to_optimize_embeddings = to_optimize_embeddings.requires_grad_(True)
         # optimizer = torch.optim.Adam([to_optimize_embeddings], lr=lr)
-        neutral_text_embeddings[:,neutral_opt_token_stard_idx:neutral_opt_token_end_idx] = to_optimize_embeddings.clone()
+        # neutral_text_embeddings[:,neutral_opt_token_stard_idx:neutral_opt_token_end_idx] = to_optimize_embeddings.clone()
+        neutral_text_embeddings = diffuser.get_text_embeddings([''],n_imgs=1)
         positive_text_embeddings, positive_opt_token_stard_idx, positive_opt_token_end_idx = diffuser.get_text_embeddings_with_PostOPTprompts([erase_concept_sampled[0]],n_imgs=1,n_opt_prompts=n_opt_prompts, masked_prompt_embedding=to_optimize_embeddings)
-        target_text_embeddings, target_opt_token_stard_idx, target_opt_token_end_idx = diffuser.get_text_embeddings_with_PostOPTprompts([erase_concept_sampled[1]],n_imgs=1,n_opt_prompts=n_opt_prompts, masked_prompt_embedding=to_optimize_embeddings)
+        # target_text_embeddings, target_opt_token_stard_idx, target_opt_token_end_idx = diffuser.get_text_embeddings_with_PostOPTprompts([erase_concept_sampled[1]],n_imgs=1,n_opt_prompts=n_opt_prompts, masked_prompt_embedding=to_optimize_embeddings)
+        target_text_embeddings = diffuser.get_text_embeddings([erase_concept_sampled[1]],n_imgs=1)
         diffuser.set_scheduler_timesteps(nsteps)
         # optimizer.zero_grad()
         for i in pbar:
@@ -110,12 +113,13 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
             grad = torch.autograd.grad(loss, to_optimize_embeddings, retain_graph=False, create_graph=False)[0]
             with torch.no_grad():
                 to_optimize_embeddings = to_optimize_embeddings - lr * torch.sign(grad)
+                to_optimize_embeddings = to_optimize_embeddings/ to_optimize_embeddings.norm(dim=-1, keepdim=True, p=2)
             
             to_optimize_embeddings.requires_grad_(True)
             
             positive_text_embeddings[:,positive_opt_token_stard_idx:positive_opt_token_end_idx] = to_optimize_embeddings.clone()
-            target_text_embeddings[:,target_opt_token_stard_idx:target_opt_token_end_idx] = to_optimize_embeddings.clone()
-            neutral_text_embeddings[:,neutral_opt_token_stard_idx:neutral_opt_token_end_idx] = to_optimize_embeddings.clone()
+            # target_text_embeddings[:,target_opt_token_stard_idx:target_opt_token_end_idx] = to_optimize_embeddings.clone()
+            # neutral_text_embeddings[:,neutral_opt_token_stard_idx:neutral_opt_token_end_idx] = to_optimize_embeddings.clone()
             
 
     torch.save(to_optimize_embeddings.detach().cpu(), save_path)
@@ -132,7 +136,7 @@ if __name__ == '__main__':
     parser.add_argument('--erase_from', help='target concept to erase from', type=str, required=False, default = None)
     parser.add_argument('--train_method', help='Type of method (xattn, noxattn, full, xattn-strict', type=str, required=True)
     parser.add_argument('--iterations', help='Number of iterations', type=int, default=200)
-    parser.add_argument('--lr', help='Learning rate', type=float, default=1e-3)
+    parser.add_argument('--lr', help='Learning rate', type=float, default=1e-2)
     parser.add_argument('--negative_guidance', help='Negative guidance value', type=float, required=False, default=1)
     parser.add_argument('--save_path', help='Path to save model', type=str, default='models/')
     parser.add_argument('--device', help='cuda device to train on', type=str, required=False, default='cuda:0')
@@ -148,7 +152,7 @@ if __name__ == '__main__':
     iterations = args.iterations #200
     negative_guidance = args.negative_guidance #1
     lr = args.lr #1e-5
-    name = f"new_pl-{erase_concept.lower().replace(' ','').replace(',','')}_from_{erase_from.lower().replace(' ','').replace(',','')}-{train_method}_{negative_guidance}-epochs_{iterations}"
+    name = f"Pos_new_pl-{erase_concept.lower().replace(' ','').replace(',','')}_from_{erase_from.lower().replace(' ','').replace(',','')}-{train_method}_{negative_guidance}-epochs_{iterations}"
     if not os.path.exists(args.save_path):
         os.makedirs(args.save_path, exist_ok = True)
     save_path = f'{args.save_path}/{name}.pt'
