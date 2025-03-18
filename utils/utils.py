@@ -365,7 +365,12 @@ class StableDiffuser(torch.nn.Module):
 
         latents = self.get_initial_latents(n_imgs, img_size, len(prompts), generator=generator)
 
-        text_embeddings = self.get_text_embeddings(prompts,n_imgs=n_imgs)
+        if "masked_prompt_embedding" in kwargs and "n_opt_prompts" in kwargs:
+            masked_prompt_embedding = kwargs["masked_prompt_embedding"]
+            n_opt_prompts = kwargs["n_opt_prompts"]
+            text_embeddings = self.get_text_embeddings_with_PostOPTprompts(prompts,n_imgs=n_imgs, n_opt_prompts=n_opt_prompts, masked_prompt_embedding=masked_prompt_embedding)
+        else:
+            text_embeddings = self.get_text_embeddings(prompts,n_imgs=n_imgs)
 
         end_iteration = end_iteration or n_steps
 
