@@ -369,6 +369,8 @@ class StableDiffuser(torch.nn.Module):
             masked_prompt_embedding = kwargs["masked_prompt_embedding"]
             n_opt_prompts = kwargs["n_opt_prompts"]
             text_embeddings = self.get_text_embeddings_with_PostOPTprompts(prompts,n_imgs=n_imgs, n_opt_prompts=n_opt_prompts, masked_prompt_embedding=masked_prompt_embedding)
+            kwargs.pop("masked_prompt_embedding")
+            kwargs.pop("n_opt_prompts")
         else:
             text_embeddings = self.get_text_embeddings(prompts,n_imgs=n_imgs)
 
