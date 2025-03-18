@@ -61,28 +61,26 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
     print(erase_concept)
 
     torch.cuda.empty_cache()
+    n_opt_prompts = 3
 
-    for i in pbar:
-        with torch.no_grad():
-            index = np.random.choice(len(erase_concept), 1, replace=False)[0]
-            erase_concept_sampled = erase_concept[index]
-            
-            
-            neutral_text_embeddings = diffuser.get_text_embeddings([''],n_imgs=1)
-            positive_text_embeddings = diffuser.get_text_embeddings([erase_concept_sampled[0]],n_imgs=1)
-            target_text_embeddings = diffuser.get_text_embeddings([erase_concept_sampled[1]],n_imgs=1)
+    for index in range(len(erase_concept)):
         
-
-            diffuser.set_scheduler_timesteps(nsteps)
-
-            optimizer.zero_grad()
-
+        erase_concept_sampled = erase_concept[index]
+        neutral_text_embeddings = diffuser.get_text_embeddings([''],n_imgs=1)
+        positive_text_embeddings, to_optimize_embeddings = diffuser.get_text_embeddings_with_OPTprompts([erase_concept_sampled[0]],n_imgs=1, n_opt_prompts=n_opt_prompts)
+        
+        # optimize the to_optimize_embeddings as the variable to optimize
+        to_optimize_embeddings = to_optimize_embeddings.requires_grad_(True)
+        optimizer = torch.optim.Adam(to_optimize_embeddings)
+        
+        
+        target_text_embeddings = diffuser.get_text_embeddings_with_PostOPTprompts([erase_concept_sampled[1]],n_imgs=1,n_opt_prompts=n_opt_prompts, to_optimize_embeddings=to_optimize_embeddings)
+        diffuser.set_scheduler_timesteps(nsteps)
+        optimizer.zero_grad()
+        for i in pbar:
             iteration = torch.randint(1, nsteps - 1, (1,)).item()
-
             latents = diffuser.get_initial_latents(1, 512, 1)
-
             with finetuner:
-
                 latents_steps, _ = diffuser.diffusion(
                     latents,
                     positive_text_embeddings,
@@ -91,29 +89,24 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
                     guidance_scale=3, 
                     show_progress=False
                 ) 
-
             diffuser.set_scheduler_timesteps(1000)
-
             iteration = int(iteration / nsteps * 1000)
-            
             positive_latents = diffuser.predict_noise(iteration, latents_steps[0], positive_text_embeddings, guidance_scale=1)
             neutral_latents = diffuser.predict_noise(iteration, latents_steps[0], neutral_text_embeddings, guidance_scale=1)
             target_latents = diffuser.predict_noise(iteration, latents_steps[0], target_text_embeddings, guidance_scale=1)
             if erase_concept_sampled[0] == erase_concept_sampled[1]:
                 target_latents = neutral_latents.clone().detach()
-        with finetuner:
-            negative_latents = diffuser.predict_noise(iteration, latents_steps[0], target_text_embeddings, guidance_scale=1)
+            with finetuner:
+                negative_latents = diffuser.predict_noise(iteration, latents_steps[0], target_text_embeddings, guidance_scale=1)
+            positive_latents.requires_grad = False
+            neutral_latents.requires_grad = False
 
-        positive_latents.requires_grad = False
-        neutral_latents.requires_grad = False
-        
+            loss = criteria(negative_latents, target_latents - (negative_guidance*(positive_latents - neutral_latents))) 
 
-        loss = criteria(negative_latents, target_latents - (negative_guidance*(positive_latents - neutral_latents))) 
-        
-        loss.backward()
-        optimizer.step()
+            loss.backward()
+            optimizer.step()
 
-    torch.save(finetuner.state_dict(), save_path)
+    torch.save(to_optimize_embeddings.detach().cpu(), save_path)
 
     del diffuser, loss, optimizer, finetuner, negative_latents, neutral_latents, positive_latents, latents_steps, latents
 
@@ -143,7 +136,7 @@ if __name__ == '__main__':
     iterations = args.iterations #200
     negative_guidance = args.negative_guidance #1
     lr = args.lr #1e-5
-    name = f"esd-{erase_concept.lower().replace(' ','').replace(',','')}_from_{erase_from.lower().replace(' ','').replace(',','')}-{train_method}_{negative_guidance}-epochs_{iterations}"
+    name = f"pl-{erase_concept.lower().replace(' ','').replace(',','')}_from_{erase_from.lower().replace(' ','').replace(',','')}-{train_method}_{negative_guidance}-epochs_{iterations}"
     if not os.path.exists(args.save_path):
         os.makedirs(args.save_path, exist_ok = True)
     save_path = f'{args.save_path}/{name}.pt'

@@ -203,11 +203,67 @@ class StableDiffuser(torch.nn.Module):
         unconditional_tokens = self.text_tokenize([""] * len(prompts))
 
         unconditional_embeddings = self.text_encode(unconditional_tokens)
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
 
         text_embeddings = torch.cat([unconditional_embeddings, text_embeddings]).repeat_interleave(n_imgs, dim=0)
 
         return text_embeddings
+    
+    
+    def get_text_embeddings_with_OPTprompts(self, prompts, n_imgs, n_opt_prompts=3):
+
+        # append "[MASK]" to the prompts
+        masked_prompts = [prompt + " [MASK]"*n_opt_prompts for prompt in prompts]
+        
+        text_tokens = self.text_tokenize(prompts)
+        num_valid_tokens= text_tokens.attention_mask.sum().item()-1
+        
+        
+        masked_text_tokens = self.text_tokenize(masked_prompts)
+        opt_num_tokens = masked_text_tokens.attention_mask.sum().item()-num_valid_tokens-1
+        opt_token_stard_idx = num_valid_tokens
+        opt_token_end_idx = num_valid_tokens+opt_num_tokens
+        
+
+        text_embeddings = self.text_encode(masked_prompts)
+        to_optimize_embeddings = text_embeddings[:,opt_token_stard_idx:opt_token_end_idx]
+
+
+        unconditional_tokens = self.text_tokenize([""] * len(masked_prompts))
+
+        unconditional_embeddings = self.text_encode(unconditional_tokens)
+        # import pdb; pdb.set_trace()
+
+        text_embeddings = torch.cat([unconditional_embeddings, text_embeddings]).repeat_interleave(n_imgs, dim=0)
+
+        return text_embeddings, to_optimize_embeddings
+    
+    def get_text_embeddings_with_PostOPTprompts(self, prompts, n_imgs, n_opt_prompts, masked_prompt_embedding):
+
+        # append "[MASK]" to the prompts
+        masked_prompts = [prompt + " [MASK]"*n_opt_prompts for prompt in prompts]
+        
+        text_tokens = self.text_tokenize(prompts)
+        num_valid_tokens= text_tokens.attention_mask.sum().item()-1
+        
+        
+        masked_text_tokens = self.text_tokenize(masked_prompts)
+        opt_num_tokens = masked_text_tokens.attention_mask.sum().item()-num_valid_tokens-1
+        opt_token_stard_idx = num_valid_tokens
+        opt_token_end_idx = num_valid_tokens+opt_num_tokens
+
+        text_embeddings = self.text_encode(masked_prompts)
+        text_embeddings[:,opt_token_stard_idx:opt_token_end_idx] = masked_prompt_embedding
+
+        unconditional_tokens = self.text_tokenize([""] * len(masked_prompts))
+
+        unconditional_embeddings = self.text_encode(unconditional_tokens)
+        # import pdb; pdb.set_trace()
+
+        text_embeddings = torch.cat([unconditional_embeddings, text_embeddings]).repeat_interleave(n_imgs, dim=0)
+
+        return text_embeddings, opt_token_stard_idx, opt_token_end_idx
+    
 
     def predict_noise(self,
              iteration,
