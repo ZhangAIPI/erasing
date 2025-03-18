@@ -71,7 +71,7 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
         neutral_text_embeddings,to_optimize_embeddings, neutral_opt_token_stard_idx, neutral_opt_token_end_idx = diffuser.get_text_embeddings_with_OPTprompts([''],n_imgs=1,n_opt_prompts=n_opt_prompts)
         # optimize the to_optimize_embeddings as the variable to optimize
         to_optimize_embeddings = torch.nn.Parameter(to_optimize_embeddings.clone().detach())
-        to_optimize_embeddings = to_optimize_embeddings/ to_optimize_embeddings.norm(dim=-1, keepdim=True, p=2)
+        # to_optimize_embeddings = to_optimize_embeddings/ to_optimize_embeddings.norm(dim=-1, keepdim=True, p=2)
         to_optimize_embeddings = to_optimize_embeddings.requires_grad_(True)
         optimizer = torch.optim.Adam([to_optimize_embeddings], lr=lr)
         # neutral_text_embeddings[:,neutral_opt_token_stard_idx:neutral_opt_token_end_idx] = to_optimize_embeddings.clone()
