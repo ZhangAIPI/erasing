@@ -262,7 +262,7 @@ class StableDiffuser(torch.nn.Module):
 
         text_embeddings = torch.cat([unconditional_embeddings, text_embeddings]).repeat_interleave(n_imgs, dim=0)
 
-        return text_embeddings, opt_token_stard_idx, opt_token_end_idx
+        return text_embeddings
     
 
     def predict_noise(self,
