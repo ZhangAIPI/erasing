@@ -31,7 +31,7 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
 
     # optimizer = torch.optim.Adam(finetuner.parameters(), lr=lr)
     criteria = torch.nn.MSELoss()
-
+    loss_value = 0.
     pbar = tqdm(range(iterations))
     erase_concept = erase_concept.split(',')
     erase_concept = [a.strip() for a in erase_concept]
@@ -61,7 +61,7 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
     print(erase_concept)
 
     torch.cuda.empty_cache()
-    n_opt_prompts = 3
+    n_opt_prompts = 20
     
     loss_dynamics = []
 
@@ -109,6 +109,7 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
 
             loss = criteria(negative_latents, target_latents - (negative_guidance*(positive_latents - neutral_latents))) 
             loss_dynamics.append(loss.cpu().item())
+            pbar.set_description(f"Loss: {loss.cpu().item()}")
             # loss.backward(retain_graph=True)
             # import pdb;pdb.set_trace()
             # optimizer.step()
