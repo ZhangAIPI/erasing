@@ -32,7 +32,7 @@ images = diffuser(prompt,
 images = transforms.ToTensor()(images)
 plt.imshow(images.permute(1,2,0).cpu().numpy())
 plt.axis('off')
-plt.savefig('figs/ori_{}.png'.format(prompt))
+plt.savefig('figs/ori_{}.png'.format(prompt.replace(' ','_')))
 
 
 
@@ -47,7 +47,7 @@ with finetuner:
 images = transforms.ToTensor()(images)
 plt.imshow(images.permute(1,2,0).cpu().numpy())
 plt.axis('off')
-plt.savefig('figs/est_{}.png'.format(prompt))
+plt.savefig('figs/est_{}.png'.format(prompt.replace(' ','_')))
 
 
 n_opt_prompts = 3
@@ -67,4 +67,4 @@ images = diffuser(prompt,
 images = transforms.ToTensor()(images)
 plt.imshow(images.permute(1,2,0).cpu().numpy())
 plt.axis('off')
-plt.savefig('figs/pl_{}.png'.format(prompt))
+plt.savefig('figs/pl_{}.png'.format(prompt.replace(' ','_')))
