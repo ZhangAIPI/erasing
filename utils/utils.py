@@ -319,8 +319,10 @@ class StableDiffuser(torch.nn.Module):
 
             # compute the previous noisy sample x_t -> x_t-1
             # import pdb;pdb.set_trace()
-            output = self.scheduler.step(noise_pred, self.scheduler.timesteps[iteration], latents)
-
+            try:
+                output = self.scheduler.step(noise_pred, self.scheduler.timesteps[iteration], latents)
+            except:
+                import pdb;pdb.set_trace
             if trace_args:
 
                 trace.close()
