@@ -120,7 +120,7 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
 
     torch.save(to_optimize_embeddings.detach().cpu(), save_path)
 
-    del diffuser, loss, optimizer, finetuner, negative_latents, neutral_latents, positive_latents, latents_steps, latents
+    del diffuser, loss,  finetuner, negative_latents, neutral_latents, positive_latents, latents_steps, latents
 
     torch.cuda.empty_cache()
 
