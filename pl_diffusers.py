@@ -68,8 +68,10 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
         erase_concept_sampled = erase_concept[index]
         neutral_text_embeddings,to_optimize_embeddings, neutral_opt_token_stard_idx, neutral_opt_token_end_idx = diffuser.get_text_embeddings_with_OPTprompts([''],n_imgs=1)
         # optimize the to_optimize_embeddings as the variable to optimize
+        to_optimize_embeddings = torch.nn.Parameter(to_optimize_embeddings.clone().detach())
         to_optimize_embeddings = to_optimize_embeddings.requires_grad_(True)
         # optimizer = torch.optim.Adam([to_optimize_embeddings], lr=lr)
+        neutral_text_embeddings[:,neutral_opt_token_stard_idx:neutral_opt_token_end_idx] = to_optimize_embeddings.clone()
         positive_text_embeddings, positive_opt_token_stard_idx, positive_opt_token_end_idx = diffuser.get_text_embeddings_with_PostOPTprompts([erase_concept_sampled[0]],n_imgs=1,n_opt_prompts=n_opt_prompts, masked_prompt_embedding=to_optimize_embeddings)
         target_text_embeddings, target_opt_token_stard_idx, target_opt_token_end_idx = diffuser.get_text_embeddings_with_PostOPTprompts([erase_concept_sampled[1]],n_imgs=1,n_opt_prompts=n_opt_prompts, masked_prompt_embedding=to_optimize_embeddings)
         diffuser.set_scheduler_timesteps(nsteps)
@@ -105,7 +107,8 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
             loss.backward(retain_graph=True)
             # import pdb;pdb.set_trace()
             # optimizer.step()
-            to_optimize_embeddings = to_optimize_embeddings - lr * torch.sign(to_optimize_embeddings.grad)
+            with torch.no_grad():
+                to_optimize_embeddings = to_optimize_embeddings - lr * torch.sign(to_optimize_embeddings.grad)
             
             optimizer.zero_grad()
             
