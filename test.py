@@ -21,7 +21,7 @@ import random
 seed = random.randint(0,2**15)
 seed = 41
 print(seed)
-prompts = ["Van Gogh", "unicorn draw with the Van Gogh style", "unicorn"]
+prompts = ["[MASK]"] # ["Van Gogh", "unicorn draw with the Van Gogh style", "unicorn"]
 for prompt in prompts:
     images = diffuser(prompt,
              img_size=512,
