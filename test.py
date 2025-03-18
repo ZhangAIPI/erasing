@@ -52,25 +52,25 @@ for prompt in prompts:
     # plt.savefig('figs/est_{}.png'.format(prompt.replace(' ','_')))
 # 
 # 
-    # n_opt_prompts = 3
-    # masked_prompt_embedding = None
-# 
-    # # torch load
-    # masked_prompt_embedding = torch.load(pl_path)
-# 
-    # images = diffuser(prompt,
-    #          img_size=512,
-    #          n_steps=50,
-    #          n_imgs=1,
-    #          generator=torch.Generator().manual_seed(seed),
-    #          guidance_scale=7.5,
-    #          n_opt_prompts=n_opt_prompts,
-    #         masked_prompt_embedding=masked_prompt_embedding
-    #          )[0][0]
-    # images = transforms.ToTensor()(images)
-    # plt.imshow(images.permute(1,2,0).cpu().numpy())
-    # plt.axis('off')
-    # plt.savefig('figs/pl_{}.png'.format(prompt.replace(' ','_')))
+    n_opt_prompts = 3
+    masked_prompt_embedding = None
+
+    # torch load
+    masked_prompt_embedding = torch.load(pl_path)
+
+    images = diffuser(prompt,
+             img_size=512,
+             n_steps=50,
+             n_imgs=1,
+             generator=torch.Generator().manual_seed(seed),
+             guidance_scale=7.5,
+             n_opt_prompts=n_opt_prompts,
+            masked_prompt_embedding=masked_prompt_embedding
+             )[0][0]
+    images = transforms.ToTensor()(images)
+    plt.imshow(images.permute(1,2,0).cpu().numpy())
+    plt.axis('off')
+    plt.savefig('figs/pl_{}.png'.format(prompt.replace(' ','_')))
     
     
     n_opt_prompts = 3
