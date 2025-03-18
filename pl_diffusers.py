@@ -71,7 +71,7 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
         
         # optimize the to_optimize_embeddings as the variable to optimize
         to_optimize_embeddings = to_optimize_embeddings.requires_grad_(True)
-        optimizer = torch.optim.Adam(to_optimize_embeddings)
+        optimizer = torch.optim.Adam([to_optimize_embeddings], lr=lr)
         
         
         target_text_embeddings = diffuser.get_text_embeddings_with_PostOPTprompts([erase_concept_sampled[1]],n_imgs=1,n_opt_prompts=n_opt_prompts, to_optimize_embeddings=to_optimize_embeddings)
