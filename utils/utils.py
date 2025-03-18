@@ -379,6 +379,7 @@ class StableDiffuser(torch.nn.Module):
 
         end_iteration = end_iteration or n_steps
 
+        import pdb; pdb.set_trace()
         latents_steps, trace_steps = self.diffusion(
             latents,
             text_embeddings,
