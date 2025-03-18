@@ -114,8 +114,8 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
             # optimizer.step()
             grad = torch.autograd.grad(loss, to_optimize_embeddings, retain_graph=False, create_graph=False)[0]
             with torch.no_grad():
-                to_optimize_embeddings = to_optimize_embeddings - lr * torch.sign(grad)
-                to_optimize_embeddings = to_optimize_embeddings/ to_optimize_embeddings.norm(dim=-1, keepdim=True, p=2)
+                to_optimize_embeddings = to_optimize_embeddings - lr * grad
+                # to_optimize_embeddings = to_optimize_embeddings/ to_optimize_embeddings.norm(dim=-1, keepdim=True, p=2)
             
             to_optimize_embeddings.requires_grad_(True)
             
