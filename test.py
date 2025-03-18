@@ -73,7 +73,7 @@ for prompt in prompts:
     # plt.savefig('figs/pl_{}.png'.format(prompt.replace(' ','_')))
     # 
     # 
-    n_opt_prompts = 3
+    n_opt_prompts = 20
     masked_prompt_embedding = None
 
     # torch load
@@ -91,4 +91,4 @@ for prompt in prompts:
     images = transforms.ToTensor()(images)
     plt.imshow(images.permute(1,2,0).cpu().numpy())
     plt.axis('off')
-    plt.savefig('figs/Large_Posnew_pl_{}.png'.format(prompt.replace(' ','_')))
+    plt.savefig('figs/Large_Posnew_pl_{}_{}.png'.format(prompt.replace(' ','_'),n_opt_prompts))
