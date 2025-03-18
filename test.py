@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 esd_path = 'models/esd-vangogh_from_vangogh-xattn_1-epochs_200.pt'
 pl_path = 'models/pl-vangogh_from_vangogh-xattn_1-epochs_200.pt'
-new_pl_path = 'models/large_Pos_new_pl-vangogh_from_vangogh-xattn_1-epochs_200.pt'
+new_pl_path = 'models/large_Pos_new_pl-vangogh_from_vangogh-xattn_1-epochs_500.pt'
 train_method = 'xattn' ## REMEMBER: please use the same train_method you used for training (it is present in the saved name)
 
 diffuser = StableDiffuser(scheduler='DDIM').to('cuda')
