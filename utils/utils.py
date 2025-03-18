@@ -203,6 +203,7 @@ class StableDiffuser(torch.nn.Module):
         unconditional_tokens = self.text_tokenize([""] * len(prompts))
 
         unconditional_embeddings = self.text_encode(unconditional_tokens)
+        import pdb; pdb.set_trace()
 
         text_embeddings = torch.cat([unconditional_embeddings, text_embeddings]).repeat_interleave(n_imgs, dim=0)
 
