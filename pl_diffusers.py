@@ -79,6 +79,7 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
         optimizer.zero_grad()
         for i in pbar:
             iteration = torch.randint(1, nsteps - 1, (1,)).item()
+            print("iteration", iteration)
             latents = diffuser.get_initial_latents(1, 512, 1)
             with finetuner:
                 latents_steps, _ = diffuser.diffusion(
