@@ -143,8 +143,8 @@ if __name__ == '__main__':
     parser.add_argument('--erase_concept', help='concept to erase', type=str, required=True)
     parser.add_argument('--erase_from', help='target concept to erase from', type=str, required=False, default = None)
     parser.add_argument('--train_method', help='Type of method (xattn, noxattn, full, xattn-strict', type=str, required=True)
-    parser.add_argument('--iterations', help='Number of iterations', type=int, default=200)
-    parser.add_argument('--lr', help='Learning rate', type=float, default=1e-2)
+    parser.add_argument('--iterations', help='Number of iterations', type=int, default=500)
+    parser.add_argument('--lr', help='Learning rate', type=float, default=1e-3)
     parser.add_argument('--negative_guidance', help='Negative guidance value', type=float, required=False, default=1)
     parser.add_argument('--save_path', help='Path to save model', type=str, default='models/')
     parser.add_argument('--device', help='cuda device to train on', type=str, required=False, default='cuda:0')
@@ -160,7 +160,7 @@ if __name__ == '__main__':
     iterations = args.iterations #200
     negative_guidance = args.negative_guidance #1
     lr = args.lr #1e-5
-    name = f"Pos_new_pl-{erase_concept.lower().replace(' ','').replace(',','')}_from_{erase_from.lower().replace(' ','').replace(',','')}-{train_method}_{negative_guidance}-epochs_{iterations}"
+    name = f"large_Pos_new_pl-{erase_concept.lower().replace(' ','').replace(',','')}_from_{erase_from.lower().replace(' ','').replace(',','')}-{train_method}_{negative_guidance}-epochs_{iterations}"
     if not os.path.exists(args.save_path):
         os.makedirs(args.save_path, exist_ok = True)
     save_path = f'{args.save_path}/{name}.pt'
