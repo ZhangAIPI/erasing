@@ -239,7 +239,7 @@ class StableDiffuser(torch.nn.Module):
 
         text_embeddings = torch.cat([unconditional_embeddings, text_embeddings]).repeat_interleave(n_imgs, dim=0)
 
-        return text_embeddings, to_optimize_embeddings
+        return text_embeddings, to_optimize_embeddings, opt_token_stard_idx, opt_token_end_idx
     
     def get_text_embeddings_with_PostOPTprompts(self, prompts, n_imgs, n_opt_prompts, masked_prompt_embedding):
 
@@ -265,7 +265,7 @@ class StableDiffuser(torch.nn.Module):
 
         text_embeddings = torch.cat([unconditional_embeddings, text_embeddings]).repeat_interleave(n_imgs, dim=0)
 
-        return text_embeddings
+        return text_embeddings, opt_token_stard_idx, opt_token_end_idx
     
 
     def predict_noise(self,
