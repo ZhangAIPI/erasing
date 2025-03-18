@@ -78,6 +78,7 @@ for prompt in prompts:
 
     # torch load
     masked_prompt_embedding = torch.load(new_pl_path)
+    import pdb;pdb.set_trace()
     images = diffuser(prompt,
              img_size=512,
              n_steps=50,
