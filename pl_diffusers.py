@@ -62,6 +62,8 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
 
     torch.cuda.empty_cache()
     n_opt_prompts = 3
+    
+    loss_dynamics = []
 
     for index in range(len(erase_concept)):
         
@@ -106,7 +108,7 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
             # neutral_latents.requires_grad = False
 
             loss = criteria(negative_latents, target_latents - (negative_guidance*(positive_latents - neutral_latents))) 
-
+            loss_dynamics.append(loss.cpu().item())
             # loss.backward(retain_graph=True)
             # import pdb;pdb.set_trace()
             # optimizer.step()
@@ -127,6 +129,12 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
     del diffuser, loss,  finetuner, negative_latents, neutral_latents, positive_latents, latents_steps, latents
 
     torch.cuda.empty_cache()
+    
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    plt.plot(loss_dynamics)
+    plt.savefig(f'{save_path.replace(".pt","")}_loss.png')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
