@@ -21,7 +21,7 @@ import random
 seed = random.randint(0,2**15)
 seed = 41
 print(seed)
-prompts = ["Van Gogh", "unicorn draw with the Van Gogh style"]
+prompts = ["Van Gogh", "unicorn draw with the Van Gogh style", "unicorn"]
 for prompt in prompts:
     images = diffuser(prompt,
              img_size=512,
@@ -34,9 +34,9 @@ for prompt in prompts:
     plt.imshow(images.permute(1,2,0).cpu().numpy())
     plt.axis('off')
     plt.savefig('figs/ori_{}.png'.format(prompt.replace(' ','_')))
-    
-    
-    
+
+
+
     with finetuner:
         images = diffuser(prompt,
                  img_size=512,
@@ -49,14 +49,14 @@ for prompt in prompts:
     plt.imshow(images.permute(1,2,0).cpu().numpy())
     plt.axis('off')
     plt.savefig('figs/est_{}.png'.format(prompt.replace(' ','_')))
-    
-    
+
+
     n_opt_prompts = 3
     masked_prompt_embedding = None
-    
+
     # torch load
     masked_prompt_embedding = torch.load(pl_path)
-    
+
     images = diffuser(prompt,
              img_size=512,
              n_steps=50,
