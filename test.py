@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 esd_path = 'models/esd-vangogh_from_vangogh-xattn_1-epochs_200.pt'
 pl_path = 'models/pl-vangogh_from_vangogh-xattn_1-epochs_200.pt'
-new_pl_path = 'models/new_pl-vangogh_from_vangogh-xattn_1-epochs_200.pt'
+new_pl_path = 'models/Pos_new_pl-vangogh_from_vangogh-xattn_1-epochs_200.pt'
 train_method = 'xattn' ## REMEMBER: please use the same train_method you used for training (it is present in the saved name)
 
 diffuser = StableDiffuser(scheduler='DDIM').to('cuda')
@@ -91,4 +91,4 @@ for prompt in prompts:
     images = transforms.ToTensor()(images)
     plt.imshow(images.permute(1,2,0).cpu().numpy())
     plt.axis('off')
-    plt.savefig('figs/new_pl_{}.png'.format(prompt.replace(' ','_')))
+    plt.savefig('figs/Posnew_pl_{}.png'.format(prompt.replace(' ','_')))
