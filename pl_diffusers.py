@@ -79,7 +79,8 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
         optimizer.zero_grad()
         for i in pbar:
             iteration = torch.randint(1, nsteps - 1, (1,)).item()
-            print("iteration", iteration)
+            # print("iteration", iteration)
+            diffuser.set_scheduler_timesteps(nsteps)
             latents = diffuser.get_initial_latents(1, 512, 1)
             with finetuner:
                 latents_steps, _ = diffuser.diffusion(
@@ -99,12 +100,13 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
                 target_latents = neutral_latents.clone().detach()
             with finetuner:
                 negative_latents = diffuser.predict_noise(iteration, latents_steps[0], target_text_embeddings, guidance_scale=1)
-            positive_latents.requires_grad = False
-            neutral_latents.requires_grad = False
+            # positive_latents.requires_grad = False
+            # neutral_latents.requires_grad = False
 
             loss = criteria(negative_latents, target_latents - (negative_guidance*(positive_latents - neutral_latents))) 
 
-            loss.backward()
+            loss.backward(retain_graph=True)
+            # import pdb;pdb.set_trace()
             optimizer.step()
             optimizer.zero_grad()
 
