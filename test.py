@@ -62,7 +62,8 @@ images = diffuser(prompt,
          n_imgs=1,
          generator=torch.Generator().manual_seed(seed),
          guidance_scale=7.5,
-         
+         n_opt_prompts=n_opt_prompts,
+        masked_prompt_embedding=masked_prompt_embedding
          )[0][0]
 images = transforms.ToTensor()(images)
 plt.imshow(images.permute(1,2,0).cpu().numpy())
