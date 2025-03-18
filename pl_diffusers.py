@@ -104,7 +104,9 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
 
             loss.backward(retain_graph=True)
             import pdb;pdb.set_trace()
-            optimizer.step()
+            # optimizer.step()
+            to_optimize_embeddings = to_optimize_embeddings - lr * torch.sign(to_optimize_embeddings.grad)
+            
             optimizer.zero_grad()
             
             positive_text_embeddings[:,positive_opt_token_stard_idx:positive_opt_token_end_idx] = to_optimize_embeddings.clone()
