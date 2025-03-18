@@ -68,12 +68,12 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
     for index in range(len(erase_concept)):
         
         erase_concept_sampled = erase_concept[index]
-        neutral_text_embeddings,to_optimize_embeddings, neutral_opt_token_stard_idx, neutral_opt_token_end_idx = diffuser.get_text_embeddings_with_OPTprompts([''],n_imgs=1)
+        neutral_text_embeddings,to_optimize_embeddings, neutral_opt_token_stard_idx, neutral_opt_token_end_idx = diffuser.get_text_embeddings_with_OPTprompts([''],n_imgs=1,n_opt_prompts=n_opt_prompts)
         # optimize the to_optimize_embeddings as the variable to optimize
         to_optimize_embeddings = torch.nn.Parameter(to_optimize_embeddings.clone().detach())
         to_optimize_embeddings = to_optimize_embeddings/ to_optimize_embeddings.norm(dim=-1, keepdim=True, p=2)
         to_optimize_embeddings = to_optimize_embeddings.requires_grad_(True)
-        # optimizer = torch.optim.Adam([to_optimize_embeddings], lr=lr)
+        optimizer = torch.optim.Adam([to_optimize_embeddings], lr=lr)
         # neutral_text_embeddings[:,neutral_opt_token_stard_idx:neutral_opt_token_end_idx] = to_optimize_embeddings.clone()
         neutral_text_embeddings = diffuser.get_text_embeddings([''],n_imgs=1)
         positive_text_embeddings, positive_opt_token_stard_idx, positive_opt_token_end_idx = diffuser.get_text_embeddings_with_PostOPTprompts([erase_concept_sampled[0]],n_imgs=1,n_opt_prompts=n_opt_prompts, masked_prompt_embedding=to_optimize_embeddings)
@@ -110,17 +110,18 @@ def train(erase_concept, erase_from, train_method, iterations, negative_guidance
             loss = criteria(negative_latents, target_latents - (negative_guidance*(positive_latents - neutral_latents))) 
             loss_dynamics.append(loss.cpu().item())
             pbar.set_description(f"Loss: {loss.cpu().item()}")
-            # loss.backward(retain_graph=True)
+            loss.backward(retain_graph=True)
             # import pdb;pdb.set_trace()
-            # optimizer.step()
-            grad = torch.autograd.grad(loss, to_optimize_embeddings, retain_graph=False, create_graph=False)[0]
-            with torch.no_grad():
-                to_optimize_embeddings = to_optimize_embeddings - lr * grad
-                # to_optimize_embeddings = to_optimize_embeddings/ to_optimize_embeddings.norm(dim=-1, keepdim=True, p=2)
-            
+            optimizer.step()
+            # grad = torch.autograd.grad(loss, to_optimize_embeddings, retain_graph=False, create_graph=False)[0]
+            # with torch.no_grad():
+            #     to_optimize_embeddings = to_optimize_embeddings - lr * grad
+            #     # to_optimize_embeddings = to_optimize_embeddings/ to_optimize_embeddings.norm(dim=-1, keepdim=True, p=2)
+            optimizer.zero_grad()
             to_optimize_embeddings.requires_grad_(True)
             
             positive_text_embeddings[:,positive_opt_token_stard_idx:positive_opt_token_end_idx] = to_optimize_embeddings.clone()
+            
             # target_text_embeddings[:,target_opt_token_stard_idx:target_opt_token_end_idx] = to_optimize_embeddings.clone()
             # neutral_text_embeddings[:,neutral_opt_token_stard_idx:neutral_opt_token_end_idx] = to_optimize_embeddings.clone()
             
